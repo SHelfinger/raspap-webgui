@@ -405,11 +405,124 @@ function DisplayTorProxyConfig(){
 *
 *
 */
+function DisplayWvDIALConfig(){
+
+	//exec( 'cat '. RASPI_WVDIAL_CONFIG, $return );
+	exec( 'ls /dev/ttyUSB*', $listofInterfaces );
+	exec( 'pidof wvdial | wc -l', $wvdialstatus );
+
+	if( $wvdialstatus[0] == 0 ) {
+		$status = '<div class="alert alert-warning alert-dismissable">WvDIAL is not running
+					<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button></div>';
+	} else {
+		$status = '<div class="alert alert-success alert-dismissable">WvDIAL is running
+					<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button></div>';
+	}
+
+	$arrConfig = parse_ini( RASPI_WVDIAL_CONFIG );
+
+	?>
+	<div class="row">
+	<div class="col-lg-12">
+    	<div class="panel panel-primary">           
+			<div class="panel-heading"><i class="fa fa-eye-slash fa-fw"></i> Configure WvDIAL PPPoE connection
+            </div>
+        <!-- /.panel-heading -->
+        <div class="panel-body">
+        	<!-- Nav tabs -->
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#basic" data-toggle="tab">Defaults</a></li>
+            </ul>
+
+            <!-- Tab panes -->
+           	<div class="tab-content">
+           		<p><?php echo $status; ?></p>
+
+            	<div class="tab-pane fade in active" id="basic">
+            		<h4>Basic settings</h4>
+					<form role="form" action="?page=save_hostapd_conf" method="POST">
+					<div class="row">
+						<div class="form-group col-md-4">
+							<label for="code">Username</label>
+							<input type="text" class="form-control" name="username" value="<?php echo $arrConfig['Dialer Defaults']['Username']; ?>" />
+						</div>
+					</div>
+					<div class="row">
+						<div class="form-group col-md-4">
+							<label for="code">Password</label>
+							<input type="text" class="form-control" name="password" value="<?php echo $arrConfig['Dialer Defaults']['Password']; ?>" />
+						</div>
+					</div>
+					<div class="row">
+						<div class="form-group col-md-4">
+							<label for="code">Phone</label>
+							<input type="text" class="form-control" name="phone" value="<?php echo $arrConfig['Dialer Defaults']['Phone']; ?>" />
+						</div>
+					</div>	
+					<div class="row">
+						<div class="form-group col-md-4 checkbox">
+							<label for="code" class="checkbox-inline">
+								<input type="checkbox" name="stupidmode" value="<?php echo $arrConfig['Dialer Defaults']['Stupid Mode']; ?>" /> Stupid Mode
+							</label>
+							<label for="code" class="checkbox-inline">
+								<input type="checkbox" name="autoreconnect" value="<?php echo $arrConfig['Dialer Defaults']['Auto Reconnect']; ?>" /> Auto Reconnect
+							</label>
+						</div>
+					</div>	
+					<div class="row">
+						<div class="form-group col-md-4">
+							<label for="code">Modem</label>
+							<select class="form-control" name="modem">
+								<?php foreach( $listofInterfaces as $interface ) {
+									echo '<option '.($interface === $arrConfig['Dialer Defaults']['Modem'] ? "selected" : "").'>'.$interface.'</option>';									
+								} ?>
+							</select>
+						</div>
+					</div>
+					<div class="row">
+						<div class="form-group col-md-4">
+							<label for="code">Extra Commands</label>
+							<input type="text" class="form-control" name="init1" value="<?php echo $arrConfig['Dialer Defaults']['Init1']; ?>" />
+							<?php 
+							if ( $arrConfig['Dialer Defaults']['Init2'] ) { ?>
+								<input type="text" class="form-control" name="init2" value="<?php echo $arrConfig['Dialer Defaults']['Init2']; ?>" />
+							<?php } 
+							if ( $arrConfig['Dialer Defaults']['Init3'] ) { ?>
+								<input type="text" class="form-control" name="init3" value="<?php echo $arrConfig['Dialer Defaults']['Init3']; ?>" />
+							<?php } ?>
+						</div>
+					</div>
+				</div>
+		
+				<input type="submit" class="btn btn-outline btn-primary" name="SaveWvDIALSettings" value="Save settings" />
+				<?php 
+				if( $wvdialstatus[0] == 0 ) {
+					echo '<input type="submit" class="btn btn-success" name="StartWvDIAL" value="Start WvDIAL" />';
+				} else {
+					echo '<input type="submit" class="btn btn-warning" name="StopWvDIAL" value="Stop WvDIAL" />';
+				};
+				?>
+				</form>
+			</div><!-- /.tab-content -->
+		</div><!-- /.panel-body -->
+		<div class="panel-footer"> Information provided by WvDIAL</div>
+    </div><!-- /.panel-primary -->
+</div><!-- /.col-lg-12 -->
+</div><!-- /.row -->
+<?php 
+}
+
+/**
+*
+*
+*/
 function SaveTORAndVPNConfig(){
   if( isset($_POST['SaveOpenVPNSettings']) ) {
     // TODO
   } elseif( isset($_POST['SaveTORProxySettings']) ) {
     // TODO
+  } elseif ( isset($_POST['SaveWvDIALSettings']) ) {
+  	// TODO
   } elseif( isset($_POST['StartOpenVPN']) ) {
     echo "Attempting to start openvpn";
     exec( 'sudo /etc/init.d/openvpn start', $return );
@@ -434,6 +547,61 @@ function SaveTORAndVPNConfig(){
     foreach( $return as $line ) {
       echo $line."<br />";
     }
+  } elseif( isset($_POST['StartWvDIAL']) ) {
+    echo "Attempting to start WvDIAL";
+    exec( 'sudo pkill wvdial', $return );
+    foreach( $return as $line ) {
+      echo $line."<br />";
+    }
+  } elseif( isset($_POST['StopWvDIAL']) ) {
+    echo "Attempting to stop WvDIAL";
+    exec( 'sudo wvdial &', $return );
+    foreach( $return as $line ) {
+      echo $line."<br />";
+    }
   }
+}
+
+function parse_ini ( $filepath ) {
+    $ini = file( $filepath );
+    if ( count( $ini ) == 0 ) { return array(); }
+    $sections = array();
+    $values = array();
+    $globals = array();
+    $i = 0;
+    foreach( $ini as $line ){
+        $line = trim( $line );
+        // Comments
+        if ( $line == '' || $line{0} == ';' ) { continue; }
+        // Sections
+        if ( $line{0} == '[' ) {
+            $sections[] = substr( $line, 1, -1 );
+            $i++;
+            continue;
+        }
+        // Key-value pair
+        list( $key, $value ) = explode( '=', $line, 2 );
+        $key = trim( $key );
+        $value = trim( $value );
+        if ( $i == 0 ) {
+            // Array values
+            if ( substr( $line, -1, 2 ) == '[]' ) {
+                $globals[ $key ][] = $value;
+            } else {
+                $globals[ $key ] = $value;
+            }
+        } else {
+            // Array values
+            if ( substr( $line, -1, 2 ) == '[]' ) {
+                $values[ $i - 1 ][ $key ][] = $value;
+            } else {
+                $values[ $i - 1 ][ $key ] = $value;
+            }
+        }
+    }
+    for( $j=0; $j<$i; $j++ ) {
+        $result[ $sections[ $j ] ] = $values[ $j ];
+    }
+    return $result + $globals;
 }
 ?>
