@@ -9,6 +9,7 @@ We'd be curious to hear about how you use this with your own Pi-powered access p
 ![](https://i.imgur.com/l4Vgd5G.png)
 ![](https://i.imgur.com/mRPtEnC.png)
 ![](https://i.imgur.com/FFdKoML.png)
+![](https://i.imgur.com/4PRk3kI.jpg)
 ## Contents
 
  - [Prerequisites](#prerequisites)
@@ -108,6 +109,7 @@ OpenVPN and TOR are two additional services that run perfectly well on the RPi, 
 // Optional services, set to true to enable.
 define('RASPI_OPENVPN_ENABLED', false );
 define('RASPI_TORPROXY_ENABLED', false );
+define('RASPI_WVDIAL_ENABLED', false );
 ```
 Please note that these are only UI's for now. If there's enough interest I'll complete the funtionality for these optional admin screens.
 
