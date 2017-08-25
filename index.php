@@ -32,10 +32,12 @@ define('RASPI_WPA_CTRL_INTERFACE', '/var/run/wpa_supplicant');
 define('RASPI_OPENVPN_CLIENT_CONFIG', '/etc/openvpn/client.conf');
 define('RASPI_OPENVPN_SERVER_CONFIG', '/etc/openvpn/server.conf');
 define('RASPI_TORPROXY_CONFIG', '/etc/tor/torrc');
+define('RASPI_WVDIAL_CONFIG', '/etc/wvdial.conf');
 
 // Optional services, set to true to enable.
 define('RASPI_OPENVPN_ENABLED', false );
 define('RASPI_TORPROXY_ENABLED', false );
+define('RASPI_WVDIAL_ENABLED', false );
 
 include_once( RASPI_CONFIG.'/raspap.php' );
 include_once( 'includes/functions.php' );
@@ -143,6 +145,11 @@ $csrf_token = $_SESSION['csrf_token'];
                  <a href="index.php?page=torproxy_conf"><i class="fa fa-eye-slash fa-fw"></i> Configure TOR proxy</a>
               </li>
               <?php endif; ?>
+              <?php if ( RASPI_WVDIAL_ENABLED ) : ?>
+              <li>
+                <a href="index.php?page=wvdial_conf"><i class="fa fa-lock fa-fw"></i> Configure WvDIAL</a>
+              </li>
+              <?php endif; ?>
               <li>
                 <a href="index.php?page=auth_conf"><i class="fa fa-lock fa-fw"></i> Configure Auth</a>
               </li>
@@ -185,6 +192,9 @@ $csrf_token = $_SESSION['csrf_token'];
             break;
           case "torproxy_conf":
             DisplayTorProxyConfig();
+            break;
+          case "wvdial_conf":
+            DisplayWvDIALConfig();
             break;
           case "auth_conf":
             DisplayAuthConfig($config['admin_user'], $config['admin_pass']);
